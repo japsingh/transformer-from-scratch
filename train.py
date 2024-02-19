@@ -42,7 +42,9 @@ def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_
         prob = model.project(out[:, -1])
         # Select the token with the max probability (because it is a greedy search)
         _, next_word = torch.max(prob, dim=1)
-        decoder_input = torch.cat([decoder_input, torch.empty(1, 1).type_as(source).fill_(next_word.item()).to(device)], dim=1)
+        decoder_input = torch.cat(
+            [decoder_input, torch.empty(1, 1).type_as(source).fill_(next_word.item()).to(device)], dim=1
+        )
 
         if next_word == eos_idx:
             break
@@ -158,7 +160,7 @@ def train_model(config):
         optimizer.load_state_dict(state['optimizer_state_dict'])
         global_step = state['global_step']
 
-    loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1)
+    loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1).to(device)
 
     for epoch in range(initial_epoch, config['num_epochs']):
         model.train()
@@ -186,7 +188,7 @@ def train_model(config):
             writer.flush()
 
             # Backpropagate the loss
-            loss.backward
+            loss.backward()
 
             # Update the weights
             optimizer.step()
